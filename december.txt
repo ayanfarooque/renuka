@@ -1,0 +1,85 @@
+#include<stdio.h>
+#include<string.h>
+
+int main()
+{
+    int k, b, bin[20];
+    int i;
+    long int m, e, d, n;
+
+    char text[200];
+    long int enc[200];
+    int size;
+
+    // Input text
+    printf("Enter text: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = 0;
+
+    printf("Enter values of e and n: ");
+    scanf("%ld %ld", &e, &n);
+
+    printf("Enter value of d: ");
+    scanf("%ld", &d);
+
+    // ---------- ENCRYPTION ----------
+    i = -1;
+    b = e;
+    while(b > 0)
+    {
+        bin[++i] = b % 2;
+        b = b / 2;
+    }
+    int k1 = i;
+
+    printf("\nEncrypted values:\n");
+
+    size = strlen(text);
+
+    for(int j = 0; j < size; j++)
+    {
+        m = text[j];
+        long int temp = 1;
+
+        for(i = k1; i >= 0; i--)
+        {
+            temp = (temp * temp) % n;
+            if(bin[i] == 1)
+                temp = (temp * m) % n;
+        }
+
+        enc[j] = temp;
+        printf("%ld ", enc[j]);
+    }
+
+    // ---------- DECRYPTION ----------
+    i = -1;
+    b = d;
+    while(b > 0)
+    {
+        bin[++i] = b % 2;
+        b = b / 2;
+    }
+    int k2 = i;
+
+    printf("\n\nDecrypted text:\n");
+
+    for(int j = 0; j < size; j++)
+    {
+        long int temp = 1;
+        long int c = enc[j];
+
+        for(i = k2; i >= 0; i--)
+        {
+            temp = (temp * temp) % n;
+            if(bin[i] == 1)
+                temp = (temp * c) % n;
+        }
+
+        printf("%c", (char)temp);
+    }
+
+    printf("\n");
+
+    return 0;
+} 

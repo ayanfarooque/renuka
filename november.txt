@@ -1,0 +1,52 @@
+#include<stdio.h>
+#include<string.h>
+
+int main()
+{
+    int k, b, bin[20];
+    int i;
+    long int m, e, d, n;
+
+    char text[200];
+
+    // Input text
+    printf("Enter text to encrypt: ");
+    fgets(text, sizeof(text), stdin);
+    text[strcspn(text, "\n")] = 0;
+
+    // RSA values
+    printf("Enter values of e and n: ");
+    scanf("%ld %ld", &e, &n);
+
+    // Convert e to binary
+    i = -1;
+    b = e;
+    while(b > 0)
+    {
+        bin[++i] = b % 2;
+        b = b / 2;
+    }
+    k = i;
+
+    printf("\nEncrypted output:\n");
+
+    // Encrypt each character
+    for(int j = 0; text[j] != '\0'; j++)
+    {
+        m = text[j];
+        d = 1;
+
+        for(i = k; i >= 0; i--)
+        {
+            d = (d * d) % n;
+            if(bin[i] == 1)
+                d = (d * m) % n;
+        }
+
+        printf("%ld ", d);
+    }
+
+    printf("\n");
+
+    return 0;
+}
