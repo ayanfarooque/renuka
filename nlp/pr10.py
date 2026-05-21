@@ -11,14 +11,11 @@ tokenizer = T5Tokenizer.from_pretrained(model_name)
 model = T5ForConditionalGeneration.from_pretrained(model_name)
 
 text = """
-Artificial Intelligence is transforming industries across the world.
-It enables machines to learn from data and make decisions.
-AI is used in healthcare, finance, education, and many other fields.
-However, it also raises ethical concerns regarding privacy and job displacement.
+we have studied nlp in our college and then we tried very hard for our exams and got good marks, out teacher graded us very good marks. Our teacher graded us very good marks our nlp teacher is very greatful and help and support us with their hardwroking nature
 """
 
 input_text = "summarize: " + text.strip()
-
+                
 inputs = tokenizer.encode(
     input_text,
     return_tensors="pt",
