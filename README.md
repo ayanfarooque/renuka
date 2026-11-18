@@ -1,145 +1,90 @@
-# Practical 1 – Conflation (Stemming) with File Handling
+# Practical 1 – Conflation (Stemming)
 
-```java
-import java.io.*;
-import java.util.*;
+```python
+import re
 
-public class P1 {
-    public static void main(String[] a) throws Exception {
-        Set<String> sw = Set.of("the", "is", "a", "an", "of", "and", "in", "to");
-        String[] sf = {"ing", "ed", "ly", "s"};
-        Map<String, Set<String>> m = new TreeMap<>();
+S = {"the", "is", "a", "an", "of", "and", "in", "to"}
+m = {}
 
-        Scanner s = new Scanner(new File("in.txt"));
+for w in re.findall("[a-z]+", open("in.txt").read().lower()):
+    if w in S:
+        continue
 
-        while (s.hasNext()) {
-            String w = s.next().toLowerCase().replaceAll("[^a-z]", ""), r = w;
+    r = w
+    for x in ("ing", "ed", "ly", "s"):
+        if w.endswith(x) and len(w) > len(x) + 2:
+            r = w[:-len(x)]
+            break
 
-            if (w.isEmpty() || sw.contains(w))
-                continue;
+    m.setdefault(r, set()).add(w)
 
-            for (String x : sf)
-                if (w.endsWith(x) && w.length() > x.length() + 2) {
-                    r = w.substring(0, w.length() - x.length());
-                    break;
-                }
-
-            m.computeIfAbsent(r, k -> new TreeSet<>()).add(w);
-        }
-
-        PrintWriter o = new PrintWriter("out.txt");
-        m.forEach((k, v) -> o.println(k + " -> " + v));
-        o.close();
-    }
-}
+open("out.txt", "w").write(
+    "\n".join(f"{k} -> {sorted(v)}" for k, v in sorted(m.items()))
+)
 ```
 
 # Practical 2 – Single-Pass Clustering
 
-```java
-import java.util.*;
+```python
+from math import sqrt
+from collections import Counter
 
-public class P2 {
-    static double cos(Map<String, Double> x, Map<String, Double> y) {
-        double d = 0, p = 0, q = 0;
+D = [
+    "cat dog pet",
+    "dog pet animal",
+    "stock market share",
+    "market share price",
+    "cat pet animal"
+]
 
-        for (var e : x.entrySet()) {
-            d += e.getValue() * y.getOrDefault(e.getKey(), 0.0);
-            p += e.getValue() * e.getValue();
-        }
+n = lambda x: sum(v * v for v in x.values())
+cos = lambda x, y: sum(x[k] * y[k] for k in x) / sqrt(n(x) * n(y))
 
-        for (double v : y.values())
-            q += v * v;
+C = []
+M = []
 
-        return d / Math.sqrt(p * q);
-    }
+for i, d in enumerate(D):
+    v = Counter(d.split())
+    b = -1
+    best = .3
 
-    public static void main(String[] a) {
-        String[] D = {
-            "cat dog pet",
-            "dog pet animal",
-            "stock market share",
-            "market share price",
-            "cat pet animal"
-        };
+    for j, c in enumerate(C):
+        s = cos(v, c)
+        if s >= best:
+            best, b = s, j
 
-        double T = 0.3;
-        List<Map<String, Double>> C = new ArrayList<>();
-        List<List<Integer>> M = new ArrayList<>();
+    if b < 0:
+        C.append(v)
+        M.append([i])
+    else:
+        C[b].update(v)
+        M[b].append(i)
 
-        for (int i = 0; i < D.length; i++) {
-            Map<String, Double> v = new HashMap<>();
-
-            for (String w : D[i].split(" "))
-                v.merge(w, 1.0, Double::sum);
-
-            int b = -1;
-            double best = T;
-
-            for (int j = 0; j < C.size(); j++) {
-                double s = cos(v, C.get(j));
-
-                if (s >= best) {
-                    best = s;
-                    b = j;
-                }
-            }
-
-            if (b < 0) {
-                C.add(v);
-                M.add(new ArrayList<>(List.of(i)));
-            } else {
-                for (var e : v.entrySet())
-                    C.get(b).merge(e.getKey(), e.getValue(), Double::sum);
-
-                M.get(b).add(i);
-            }
-        }
-
-        System.out.println(M);
-    }
-}
+print(M)
 ```
 
-# Practical 3 – Document Retrieval Using an Inverted File
+# Practical 3 – Inverted File
 
-```java
-import java.util.*;
+```python
+D = [
+    "information retrieval system",
+    "retrieval of documents",
+    "inverted file index",
+    "documents index system"
+]
 
-public class P3 {
-    public static void main(String[] a) {
-        String[] D = {
-            "information retrieval system",
-            "retrieval of documents",
-            "inverted file index",
-            "documents index system"
-        };
+I = {}
 
-        Map<String, TreeSet<Integer>> I = new TreeMap<>();
+for i, d in enumerate(D, 1):
+    for w in d.split():
+        I.setdefault(w, set()).add(i)
 
-        for (int i = 0; i < D.length; i++)
-            for (String w : D[i].split(" "))
-                I.computeIfAbsent(w, k -> new TreeSet<>()).add(i + 1);
+print(I)
 
-        System.out.println(I);
-
-        Set<Integer> r = null;
-
-        for (String q : new Scanner(System.in).nextLine().split(" ")) {
-            Set<Integer> s = I.getOrDefault(q, new TreeSet<>());
-
-            if (r == null)
-                r = new TreeSet<>(s);
-            else
-                r.retainAll(s);
-        }
-
-        System.out.println("Docs: " + r);
-    }
-}
+print(set.intersection(*[I.get(q, set()) for q in input().split()]))
 ```
 
-# Practical 4 – Simple Web Crawler
+# Practical 4 – Simple Web Crawler (Java)
 
 ```java
 import java.net.*;
@@ -174,54 +119,21 @@ public class P4 {
 }
 ```
 
-# Practical 5 – Feature Extraction from a 2D Colour Image
+# Practical 5 – Colour Image Features
 
-```java
-import java.awt.image.*;
-import javax.imageio.*;
-import java.io.*;
-import java.util.*;
+```python
+import sys
+import numpy as np
+from PIL import Image
 
-public class P5 {
-    public static void main(String[] a) throws Exception {
-        BufferedImage im = ImageIO.read(new File(a[0]));
+a = np.array(Image.open(sys.argv[1]).convert("RGB"), float)
 
-        int w = im.getWidth(), h = im.getHeight(), n = w * h;
+print(a.mean((0, 1)))
 
-        double r = 0, g = 0, b = 0, t = 0;
-        int[][] H = new int[3][8];
+print([
+    np.histogram(a[..., i], 8, (0, 256))[0]
+    for i in range(3)
+])
 
-        for (int y = 0; y < h; y++)
-            for (int x = 0; x < w; x++) {
-                int p = im.getRGB(x, y),
-                    R = p >> 16 & 255,
-                    G = p >> 8 & 255,
-                    B = p & 255;
-
-                r += R;
-                g += G;
-                b += B;
-
-                H[0][R / 32]++;
-                H[1][G / 32]++;
-                H[2][B / 32]++;
-
-                if (x > 0) {
-                    int q = im.getRGB(x - 1, y);
-
-                    t += Math.abs(
-                        (R + G + B) -
-                        ((q >> 16 & 255) + (q >> 8 & 255) + (q & 255))
-                    ) / 3.0;
-                }
-            }
-
-        System.out.printf(
-            "Mean RGB: %.1f %.1f %.1f%nTexture: %.2f%n",
-            r / n, g / n, b / n, t / n
-        );
-
-        System.out.println(Arrays.deepToString(H));
-    }
-}
+print(abs(np.diff(a.mean(2), axis=1)).mean())
 ```
