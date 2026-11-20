@@ -1,139 +1,179 @@
-# Practical 1 – Conflation (Stemming)
 
-```python
-import re
+Recommender Systems Practicals
 
-S = {"the", "is", "a", "an", "of", "and", "in", "to"}
-m = {}
+Language: Python
+Libraries: NumPy, Pandas, Scikit-learn, SciPy
 
-for w in re.findall("[a-z]+", open("in.txt").read().lower()):
-    if w in S:
-        continue
+Install dependencies:
 
-    r = w
-    for x in ("ing", "ed", "ly", "s"):
-        if w.endswith(x) and len(w) > len(x) + 2:
-            r = w[:-len(x)]
-            break
+pip install numpy pandas scikit-learn scipy
 
-    m.setdefault(r, set()).add(w)
+---
 
-open("out.txt", "w").write(
-    "\n".join(f"{k} -> {sorted(v)}" for k, v in sorted(m.items()))
-)
-```
+1. Popularity-Based Recommendation (Top-N)
 
-# Practical 2 – Single-Pass Clustering
+import pandas as pd
 
-```python
-from math import sqrt
-from collections import Counter
+items = ['A','A','B','C','B','A']
+print(pd.Series(items).value_counts().head(2))
 
-D = [
-    "cat dog pet",
-    "dog pet animal",
-    "stock market share",
-    "market share price",
-    "cat pet animal"
-]
+2. Similarity Measures (Cosine, Pearson, Jaccard)
 
-n = lambda x: sum(v * v for v in x.values())
-cos = lambda x, y: sum(x[k] * y[k] for k in x) / sqrt(n(x) * n(y))
-
-C = []
-M = []
-
-for i, d in enumerate(D):
-    v = Counter(d.split())
-    b = -1
-    best = .3
-
-    for j, c in enumerate(C):
-        s = cos(v, c)
-        if s >= best:
-            best, b = s, j
-
-    if b < 0:
-        C.append(v)
-        M.append([i])
-    else:
-        C[b].update(v)
-        M[b].append(i)
-
-print(M)
-```
-
-# Practical 3 – Inverted File
-
-```python
-D = [
-    "information retrieval system",
-    "retrieval of documents",
-    "inverted file index",
-    "documents index system"
-]
-
-I = {}
-
-for i, d in enumerate(D, 1):
-    for w in d.split():
-        I.setdefault(w, set()).add(i)
-
-print(I)
-
-print(set.intersection(*[I.get(q, set()) for q in input().split()]))
-```
-
-# Practical 4 – Simple Web Crawler (Java)
-
-```java
-import java.net.*;
-import java.util.*;
-import java.util.regex.*;
-
-public class P4 {
-    public static void main(String[] a) {
-        Queue<String> q = new LinkedList<>(List.of(a[0]));
-        Set<String> v = new HashSet<>();
-
-        while (!q.isEmpty() && v.size() < 10) {
-            String u = q.poll();
-
-            if (!v.add(u))
-                continue;
-
-            System.out.println(u);
-
-            try {
-                String h = new String(new URL(u).openStream().readAllBytes());
-
-                Matcher m = Pattern.compile("href=\"(http[^\"]+)\"").matcher(h);
-
-                while (m.find())
-                    q.add(m.group(1));
-
-            } catch (Exception e) {
-            }
-        }
-    }
-}
-```
-
-# Practical 5 – Colour Image Features
-
-```python
-import sys
 import numpy as np
-from PIL import Image
+from sklearn.metrics.pairwise import cosine_similarity
 
-a = np.array(Image.open(sys.argv[1]).convert("RGB"), float)
+A, B = [1,2,3], [2,4,6]
+X, Y = {1,2,3}, {2,3,4}
 
-print(a.mean((0, 1)))
+print("Cosine:", cosine_similarity([A],[B])[0][0])
+print("Pearson:", np.corrcoef(A,B)[0][1])
+print("Jaccard:", len(X&Y)/len(X|Y))
 
-print([
-    np.histogram(a[..., i], 8, (0, 256))[0]
-    for i in range(3)
-])
+3. Content-Based Filtering Using TF-IDF
 
-print(abs(np.diff(a.mean(2), axis=1)).mean())
-```
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+movies = ["action adventure", "action superhero",
+          "romantic drama", "superhero fantasy"]
+
+M = TfidfVectorizer().fit_transform(movies)
+S = cosine_similarity(M)
+
+print("Recommendations:", S[0].argsort()[-2:][::-1])
+
+4. User Profile Learning and Item Ranking
+
+import numpy as np
+
+items = np.array([[1,0,1],[1,0,1],[0,1,0],[0,1,1]])
+
+profile = items[:2].mean(axis=0)
+scores = items @ profile / (
+    np.linalg.norm(items,axis=1) * np.linalg.norm(profile)
+)
+
+print("Profile:", profile)
+print("Ranking:", scores.argsort()[::-1])
+
+5. User-Based Collaborative Filtering
+
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+R = np.array([[5,4,0],[5,4,5],[1,2,1]])
+
+S = cosine_similarity(R)
+scores = S[0,1:] @ R[1:,2] / np.abs(S[0,1:]).sum()
+
+print("Similarities:", S[0])
+print("Predicted Rating:", scores)
+
+6. Item-Based Collaborative Filtering
+
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+R = np.array([[5,4,0],[4,5,0],[0,1,5]])
+
+S = cosine_similarity(R.T)
+user = R[0]
+rated = user > 0
+
+scores = S[:,rated] @ user[rated] / np.abs(S[:,rated]).sum(axis=1)
+
+print("Item Similarity:\n", S)
+print("Ranking:", scores.argsort()[::-1])
+
+7. Matrix Factorization Using SVD
+
+import numpy as np
+
+R = np.array([[5,4,0],[4,0,5],[0,5,4]])
+
+U, S, V = np.linalg.svd(R)
+k = 2
+
+pred = U[:,:k] @ np.diag(S[:k]) @ V[:k,:]
+
+print(np.round(pred,2))
+
+8. Evaluation Using RMSE, Precision@K and Recall@K
+
+import numpy as np
+
+actual = np.array([5,3,4,2])
+predicted = np.array([4,3,5,2])
+
+rmse = np.sqrt(np.mean((actual-predicted)**2))
+
+recommended = {'A','B','C','D'}
+relevant = {'A','C','E'}
+
+hits = len(recommended & relevant)
+
+print("RMSE:", rmse)
+print("Precision:", hits/len(recommended))
+print("Recall:", hits/len(relevant))
+
+9. Hybrid Recommender System
+
+import numpy as np
+
+CB = np.array([0.9,0.7,0.4])
+CF = np.array([0.6,0.9,0.8])
+
+alpha = 0.7
+scores = alpha*CB + (1-alpha)*CF
+
+print("Hybrid Scores:", scores)
+print("Ranking:", scores.argsort()[::-1])
+
+10. Industrial Recommender Systems — Case Study
+
+This practical is theory-based. No Python implementation is necessary.
+
+Platform| Recommendation Technique| Data Used
+Netflix| Hybrid Filtering| Watch history, ratings
+Amazon| Item-Based Collaborative Filtering| Purchases, browsing
+YouTube| Candidate Generation and Ranking| Watch time, search history
+
+Working
+
+Netflix:
+
+1. Collect viewing history.
+2. Analyze user preferences.
+3. Find relevant movies.
+4. Rank and recommend content.
+
+Amazon:
+
+1. Collect browsing and purchase data.
+2. Identify similar products.
+3. Calculate product relevance.
+4. Recommend products.
+
+YouTube:
+
+1. Candidate Generation: Select potentially relevant videos.
+2. Ranking: Rank videos according to predicted relevance.
+3. Display personalized recommendations.
+
+---
+
+Quick Revision
+
+Practical| Main Function / Concept
+1| "value_counts()"
+2| Cosine, Pearson, Jaccard
+3| "TfidfVectorizer()"
+4| Average feature vectors
+5| User-user similarity
+6| "cosine_similarity(R.T)"
+7| "np.linalg.svd()"
+8| RMSE, Precision, Recall
+9| Weighted score combination
+10| Netflix, Amazon, YouTube
+
+Note: All programs use small, predefined datasets and print results directly. Practical 5 and 6 use simplified similarity-weighted predictions. Practical 7 demonstrates basic SVD reconstruction, treating zeros as observed values. These are educational implementations, not production-grade recommendation systems.
