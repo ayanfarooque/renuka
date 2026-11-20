@@ -1,24 +1,28 @@
+# Recommender Systems Practicals
 
-Recommender Systems Practicals
-
-Language: Python
-Libraries: NumPy, Pandas, Scikit-learn, SciPy
+**Language:** Python  
+**Libraries:** NumPy, Pandas, Scikit-learn, SciPy
 
 Install dependencies:
 
+```bash
 pip install numpy pandas scikit-learn scipy
+```
 
 ---
 
-1. Popularity-Based Recommendation (Top-N)
+## 1. Popularity-Based Recommendation (Top-N)
 
+```python
 import pandas as pd
 
 items = ['A','A','B','C','B','A']
 print(pd.Series(items).value_counts().head(2))
+```
 
-2. Similarity Measures (Cosine, Pearson, Jaccard)
+## 2. Similarity Measures (Cosine, Pearson, Jaccard)
 
+```python
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -28,9 +32,11 @@ X, Y = {1,2,3}, {2,3,4}
 print("Cosine:", cosine_similarity([A],[B])[0][0])
 print("Pearson:", np.corrcoef(A,B)[0][1])
 print("Jaccard:", len(X&Y)/len(X|Y))
+```
 
-3. Content-Based Filtering Using TF-IDF
+## 3. Content-Based Filtering Using TF-IDF
 
+```python
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -41,9 +47,11 @@ M = TfidfVectorizer().fit_transform(movies)
 S = cosine_similarity(M)
 
 print("Recommendations:", S[0].argsort()[-2:][::-1])
+```
 
-4. User Profile Learning and Item Ranking
+## 4. User Profile Learning and Item Ranking
 
+```python
 import numpy as np
 
 items = np.array([[1,0,1],[1,0,1],[0,1,0],[0,1,1]])
@@ -55,9 +63,11 @@ scores = items @ profile / (
 
 print("Profile:", profile)
 print("Ranking:", scores.argsort()[::-1])
+```
 
-5. User-Based Collaborative Filtering
+## 5. User-Based Collaborative Filtering
 
+```python
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -68,9 +78,11 @@ scores = S[0,1:] @ R[1:,2] / np.abs(S[0,1:]).sum()
 
 print("Similarities:", S[0])
 print("Predicted Rating:", scores)
+```
 
-6. Item-Based Collaborative Filtering
+## 6. Item-Based Collaborative Filtering
 
+```python
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -84,9 +96,11 @@ scores = S[:,rated] @ user[rated] / np.abs(S[:,rated]).sum(axis=1)
 
 print("Item Similarity:\n", S)
 print("Ranking:", scores.argsort()[::-1])
+```
 
-7. Matrix Factorization Using SVD
+## 7. Matrix Factorization Using SVD
 
+```python
 import numpy as np
 
 R = np.array([[5,4,0],[4,0,5],[0,5,4]])
@@ -97,9 +111,11 @@ k = 2
 pred = U[:,:k] @ np.diag(S[:k]) @ V[:k,:]
 
 print(np.round(pred,2))
+```
 
-8. Evaluation Using RMSE, Precision@K and Recall@K
+## 8. Evaluation Using RMSE, Precision@K and Recall@K
 
+```python
 import numpy as np
 
 actual = np.array([5,3,4,2])
@@ -115,9 +131,11 @@ hits = len(recommended & relevant)
 print("RMSE:", rmse)
 print("Precision:", hits/len(recommended))
 print("Recall:", hits/len(relevant))
+```
 
-9. Hybrid Recommender System
+## 9. Hybrid Recommender System
 
+```python
 import numpy as np
 
 CB = np.array([0.9,0.7,0.4])
@@ -128,52 +146,52 @@ scores = alpha*CB + (1-alpha)*CF
 
 print("Hybrid Scores:", scores)
 print("Ranking:", scores.argsort()[::-1])
+```
 
-10. Industrial Recommender Systems — Case Study
+## 10. Industrial Recommender Systems — Case Study
 
 This practical is theory-based. No Python implementation is necessary.
 
-Platform| Recommendation Technique| Data Used
-Netflix| Hybrid Filtering| Watch history, ratings
-Amazon| Item-Based Collaborative Filtering| Purchases, browsing
-YouTube| Candidate Generation and Ranking| Watch time, search history
+| Platform | Recommendation Technique | Data Used |
+|---|---|---|
+| Netflix | Hybrid Filtering | Watch history, ratings |
+| Amazon | Item-Based Collaborative Filtering | Purchases, browsing |
+| YouTube | Candidate Generation and Ranking | Watch time, search history |
 
-Working
+### Working
 
-Netflix:
-
+**Netflix:**
 1. Collect viewing history.
 2. Analyze user preferences.
 3. Find relevant movies.
 4. Rank and recommend content.
 
-Amazon:
-
+**Amazon:**
 1. Collect browsing and purchase data.
 2. Identify similar products.
 3. Calculate product relevance.
 4. Recommend products.
 
-YouTube:
-
+**YouTube:**
 1. Candidate Generation: Select potentially relevant videos.
 2. Ranking: Rank videos according to predicted relevance.
 3. Display personalized recommendations.
 
 ---
 
-Quick Revision
+## Quick Revision
 
-Practical| Main Function / Concept
-1| "value_counts()"
-2| Cosine, Pearson, Jaccard
-3| "TfidfVectorizer()"
-4| Average feature vectors
-5| User-user similarity
-6| "cosine_similarity(R.T)"
-7| "np.linalg.svd()"
-8| RMSE, Precision, Recall
-9| Weighted score combination
-10| Netflix, Amazon, YouTube
+| Practical | Main Function / Concept |
+|---|---|
+| 1 | `value_counts()` |
+| 2 | Cosine, Pearson, Jaccard |
+| 3 | `TfidfVectorizer()` |
+| 4 | Average feature vectors |
+| 5 | User-user similarity |
+| 6 | `cosine_similarity(R.T)` |
+| 7 | `np.linalg.svd()` |
+| 8 | RMSE, Precision, Recall |
+| 9 | Weighted score combination |
+| 10 | Netflix, Amazon, YouTube |
 
-Note: All programs use small, predefined datasets and print results directly. Practical 5 and 6 use simplified similarity-weighted predictions. Practical 7 demonstrates basic SVD reconstruction, treating zeros as observed values. These are educational implementations, not production-grade recommendation systems.
+**Note:** All programs use small, predefined datasets and print results directly. Practical 5 and 6 use simplified similarity-weighted predictions. Practical 7 demonstrates basic SVD reconstruction, treating zeros as observed values. These are educational implementations, not production-grade recommendation systems.
